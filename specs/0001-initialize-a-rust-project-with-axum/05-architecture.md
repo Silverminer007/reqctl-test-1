@@ -137,3 +137,138 @@ future requirements:
   (package `reqctl-test`). This proposal follows the approved tech spec
   (repo root) rather than introducing an `app/` subdirectory, since
   changing the project root would contradict step 5's approved layout.
+
+## Critique
+
+Overall the proposal is sound: it correctly follows 03-tech-spec.md's
+repo-root layout, the `config.rs`/`main.rs` split is the right amount of
+structure for a one-route skeleton, and the "thin `main.rs`, growable
+`config.rs`" conventions are reasonable defaults for future requirements.
+The points below are refinements, not a different direction.
+
+1. **Missing dev-dependency for HTTP/router tests.** 04-tests.md's section 2
+   tests, and the tech spec's "Testing hooks" section, both point at
+   `tower::ServiceExt::oneshot` for exercising the router without binding a
+   socket — but `tower` does not appear in the proposal's dependency table
+   (which only lists production dependencies). Without flagging this now,
+   step 10 has to make an undocumented dependency decision. `tower` (with
+   the `util` feature, for `.oneshot()`) should be added as a
+   **dev-dependency** explicitly.
+
+2. **Test 2.4 (concurrent requests) doesn't need a real socket or an HTTP
+   client.** The proposal doesn't say how 2.4 will be implemented, leaving
+   open the possibility that step 10 reaches for a real `TcpListener` +
+   HTTP client crate (e.g. `reqwest`) just for this one test — a heavyweight
+   dev-dependency for not much benefit. Since `axum::Router` implements
+   `Clone`, concurrency can be exercised by firing N `.clone().oneshot(req)`
+   calls concurrently (e.g. via `tokio::join!`/`futures::future::join_all`)
+   against the same router and asserting all return `200 OK`. This covers
+   the same behavior as 2.4 with no new dependency beyond `tower`.
+
+3. **Resolve the config test-seam open question now.** The proposal leaves
+   open how `config::load()`'s unit tests (1.1–1.10) avoid interference from
+   `cargo test`'s default parallelism, given env vars are process-global and
+   `CONFIG_FILE_PATH` is a constant. Pulling in `serial_test`/`temp-env` is
+   unnecessary: split `load()` into a thin public wrapper that reads the
+   real env var and `config.toml`, plus a private, **pure** function (e.g.
+   `fn resolve(file: Option<FileConfig>, env_port: Option<&str>) ->
+   Result<AppConfig, ConfigError>` or similar) that contains all of the
+   precedence/validation logic from 03-tech-spec.md. Unit tests 1.1–1.10
+   call this pure function directly with literal `Option`/string values —
+   no real env var mutation, no temp files, no test ordering concerns. This
+   is strictly simpler than the alternatives the proposal considered and
+   fully resolves the open question, so it should be locked in for step 10
+   rather than left as a choice.
+
+4. **`ConfigError` needs `#[derive(Debug)]`.** `main`'s `Result<(),
+   Box<dyn std::error::Error>>` return type causes the default Rust runtime
+   to print startup errors via `Debug`, not `Display`. The proposal
+   specifies a hand-rolled `Display` + `std::error::Error` impl but doesn't
+   mention `Debug`. `ConfigError` should `#[derive(Debug)]` (trivial, no
+   extra dependency) so that an invalid-config startup failure actually
+   prints a useful message instead of relying on `Display` (which won't be
+   invoked by the default error reporter).
+
+5. **No other issues found.** File list, module boundaries, data flow,
+   `.gitignore` replacement, `Cargo.lock` commit policy, and the
+   conventions-for-future-requirements section are all appropriate as
+   written and carry forward unchanged.
+
+## Final Architecture
+
+This is the proposal above, **with the following amendments** (everything
+else — file list, module layout, data flow, `.gitignore`, conventions —
+applies as originally proposed):
+
+### Dependencies (`Cargo.toml`) — amended
+
+Production dependencies, as proposed:
+
+| Crate | Features | Purpose |
+|---|---|---|
+| `axum` | default | router + server |
+| `tokio` | `full` | async runtime, `#[tokio::main]`, `TcpListener` |
+| `serde` | `derive` | deserialize `FileConfig` |
+| `toml` | default | parse `config.toml` |
+
+Plus, **new** — dev-dependencies (test-only, do not affect the production
+binary):
+
+| Crate | Features | Purpose |
+|---|---|---|
+| `tower` | `util` | `ServiceExt::oneshot` for router tests (04-tests.md §2) |
+
+### `src/config.rs` — amended
+
+As proposed (`FileConfig`, `AppConfig`, `ConfigError`, constants,
+`pub fn load() -> Result<AppConfig, ConfigError>`), with two changes:
+
+- `ConfigError` derives `Debug` in addition to its hand-written `Display`
+  and `std::error::Error` impls (`#[derive(Debug)] pub enum ConfigError {
+  Env(String), File(String) }`), so `main`'s default error reporter (which
+  prints via `Debug`) shows the actionable message.
+- `load()` is split into:
+  - `pub fn load() -> Result<AppConfig, ConfigError>` — reads
+    `CONFIG_FILE_PATH` from disk (missing file → `None`/default,
+    unparseable → `ConfigError::File`) and reads `PORT_ENV_VAR` from the
+    real environment, then delegates to `resolve(...)`.
+  - A private, pure function — e.g.
+    `fn resolve(file: FileConfig, env_port: Option<&str>) ->
+    Result<AppConfig, ConfigError>` — implementing all precedence/validation
+    logic from 03-tech-spec.md (env var wins if set & valid; else file's
+    `port`; else `DEFAULT_PORT`; invalid env var → `ConfigError::Env`;
+    `FileConfig`'s `port` is already `Option<u16>` so file-side `u16`
+    range/type errors are caught earlier by `toml`/`serde` during
+    deserialization in `load()`, surfaced as `ConfigError::File`).
+  - Unit tests 1.1–1.10 call `resolve(...)` directly with literal
+    `FileConfig { port: ... }` values and `Option<&str>` env values — no
+    real env var mutation, no temp files, safe under `cargo test`'s default
+    parallelism.
+
+### `src/main.rs` — unchanged
+
+As proposed: `#[tokio::main] async fn main() -> Result<(),
+Box<dyn std::error::Error>>` calling `config::load()?`, building
+`Router::new().route("/", get(root))`, binding `TcpListener` to
+`0.0.0.0:<port>`, and `axum::serve(...)`. `root` stays inline as proposed.
+
+### HTTP/router tests (04-tests.md §2) — clarified
+
+- 2.1–2.3: build the `Router` as in `main.rs` (factor router construction
+  into a small `fn app() -> Router` if convenient for reuse between `main`
+  and tests — optional, implementation's call), and drive requests via
+  `tower::ServiceExt::oneshot`, asserting status codes (`200`/`404`/`405`)
+  and body (`"Hello, world!"` for `/`).
+- 2.4 (concurrent requests): clone the same `Router` N times and issue N
+  `.oneshot(request)` calls concurrently (e.g. `tokio::join!` or
+  `futures::future::join_all`), asserting each returns `200 OK` with
+  `"Hello, world!"`. No real `TcpListener` bind or HTTP client
+  dev-dependency is needed for this test.
+- §3 (process-level/manual tests) remain manual/optional as proposed —
+  no automated test infrastructure changes needed for these.
+
+### Everything else
+
+File list, `Cargo.lock` commit policy, `.gitignore` replacement, data flow,
+and the two forward-looking conventions (config module pattern, thin
+`main.rs` composition root) are unchanged from the Proposal section above.
