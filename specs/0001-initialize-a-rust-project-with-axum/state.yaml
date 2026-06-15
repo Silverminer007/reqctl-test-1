@@ -3,9 +3,9 @@ title: Initialize a rust project with axum
 project: reqctl-test
 branch: req/0001-initialize-a-rust-project-with-axum
 pr_number: 1
-current_step: 9
-status: awaiting_user
-assigned_role: user
+current_step: 8
+status: in_progress
+assigned_role: architect-propose
 history:
     - step: 1
       role: user
@@ -89,5 +89,10 @@ history:
         - Noted `ConfigError` should `#[derive(Debug)]` so `main`'s default error reporter prints something useful on startup failure.
 
         The Final Architecture section captures the proposal plus these amendments as the spec for the Developer step (10).
+    - step: 9
+      role: user
+      actor: user
+      completed_at: 2026-06-15T19:52:35.600439819Z
+      summary: I would like to be able to use env vars in the config file. The config file is the source of truth for the application
 created_at: 2026-06-15T19:30:33.221789952Z
-updated_at: 2026-06-15T19:48:34.280977851Z
+updated_at: 2026-06-15T19:52:35.600439819Z
