@@ -5,9 +5,7 @@ branch: req/0001-initialize-a-rust-project-with-axum
 pr_number: 1
 current_step: 8
 status: in_progress
-assigned_role: architect-propose
-claimed_by: architect-propose-963691
-claimed_at: 2026-06-15T19:52:49.002876563Z
+assigned_role: architect-critique
 history:
     - step: 1
       role: user
@@ -96,5 +94,15 @@ history:
       actor: user
       completed_at: 2026-06-15T19:52:35.600439819Z
       summary: I would like to be able to use env vars in the config file. The config file is the source of truth for the application
+    - step: 8
+      role: architect-propose
+      actor: agent
+      completed_at: 2026-06-15T19:56:17.714430953Z
+      summary: |-
+        I've written the proposal to `specs/0001-initialize-a-rust-project-with-axum/05-architecture.md`.
+
+        Summary: the proposal redesigns the config model around the user's step-9 feedback ("config file is source of truth" + "use env vars in the config file") by introducing shell-style `${VAR}` / `${VAR:-default}` interpolation inside `config.toml`, with the file fully declaring whether/how env vars affect each setting (no separate, independently-overriding `REQCTL_PORT`). It keeps the same file layout, `config.rs`/`main.rs` split, and dependency set from the approved tech spec, with a pure `resolve`/`expand_env_vars` core for testability.
+
+        The open-questions section flags that this is a real change from `02-domain-spec.md`/`03-tech-spec.md`'s env-wins precedence model and that several `04-tests.md` cases (1.4, 1.5, 1.6, 1.10) would need updated expectations — these upstream docs weren't modified per the task constraints, so that's surfaced for the user/maintainers to resolve.
 created_at: 2026-06-15T19:30:33.221789952Z
-updated_at: 2026-06-15T19:52:49.002876563Z
+updated_at: 2026-06-15T19:56:17.714430953Z
