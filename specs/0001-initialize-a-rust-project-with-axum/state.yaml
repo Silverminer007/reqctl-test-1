@@ -3,11 +3,9 @@ title: Initialize a rust project with axum
 project: reqctl-test
 branch: req/0001-initialize-a-rust-project-with-axum
 pr_number: 1
-current_step: 6
-status: in_progress
-assigned_role: test-definition
-claimed_by: test-definition-927266
-claimed_at: 2026-06-15T19:43:33.799805059Z
+current_step: 7
+status: awaiting_user
+assigned_role: user
 history:
     - step: 1
       role: user
@@ -54,5 +52,17 @@ history:
         - Testing hooks for step 6 (unit tests for config precedence/errors, integration test for the route and default 404/405)
 
         No other files were modified.
+    - step: 6
+      role: test-definition
+      actor: agent
+      completed_at: 2026-06-15T19:44:19.260206206Z
+      summary: |-
+        Created `specs/0001-initialize-a-rust-project-with-axum/04-tests.md` with 17 concrete test cases across three groups:
+
+        - **Config resolution tests** (10 cases) — default port, file-only, env-only, env precedence, invalid env var (non-numeric and out-of-range), malformed/invalid TOML, missing file, and the interaction between invalid env var + valid file.
+        - **HTTP/router tests** (4 cases) — `GET /` → 200 "Hello, world!", unknown path → 404, wrong method → 405, concurrent requests.
+        - **Startup/process-level tests** (3 cases, optional/manual) — fail-fast on invalid config, fail-fast on port-in-use, successful default startup.
+
+        A coverage table maps each domain-spec behavior/edge case to its test case(s). Ready for review before architecture/implementation proceeds.
 created_at: 2026-06-15T19:30:33.221789952Z
-updated_at: 2026-06-15T19:43:33.799805059Z
+updated_at: 2026-06-15T19:44:19.260206206Z
