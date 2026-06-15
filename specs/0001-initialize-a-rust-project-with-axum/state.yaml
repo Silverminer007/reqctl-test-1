@@ -3,11 +3,9 @@ title: Initialize a rust project with axum
 project: reqctl-test
 branch: req/0001-initialize-a-rust-project-with-axum
 pr_number: 1
-current_step: 10
+current_step: 11
 status: in_progress
-assigned_role: developer
-claimed_by: developer-1002531
-claimed_at: 2026-06-15T20:02:31.373169931Z
+assigned_role: qa
 history:
     - step: 1
       role: user
@@ -124,5 +122,19 @@ history:
       actor: user
       completed_at: 2026-06-15T20:02:14.478388306Z
       summary: Approved.
+    - step: 10
+      role: developer
+      actor: agent
+      completed_at: 2026-06-15T20:06:23.615725214Z
+      summary: |-
+        Implementation complete. Summary of changes:
+
+        - **`Cargo.toml`** / **`Cargo.lock`**: new binary crate `reqctl-test`, edition 2021, with `axum`, `tokio` (full), `serde` (derive), `toml` as deps, `tower` (util) as dev-dep.
+        - **`config.toml`**: default config using `${REQCTL_PORT:-3000}` interpolation for `port`.
+        - **`src/config.rs`**: `AppConfig`/`FileConfig`/`ConfigError::File`, `load()` (I/O wrapper, NotFound → defaults, other I/O errors → `ConfigError::File`), `resolve()` pure core, and `expand_env_vars()` hand-written `${NAME}`/`${NAME:-default}` scanner that skips `#` comments. 13 unit tests covering 04-tests.md §1.1–1.13' (including the superseded table in 05-architecture.md's Final Architecture).
+        - **`src/main.rs`**: thin composition root (`config::load()?`, `app()` router with `GET /` → "Hello, world!", bind + serve), plus 4 router tests via `tower::ServiceExt::oneshot` covering §2.1–2.4.
+        - **`.gitignore`**: replaced wholesale with the Rust-appropriate `/target` + `.env`.
+
+        `cargo build`, `cargo test` (18/18 pass), `cargo fmt --check`, and `cargo clippy` are all clean, and a manual `cargo run` confirms `GET /` → 200 and unknown paths → 404.
 created_at: 2026-06-15T19:30:33.221789952Z
-updated_at: 2026-06-15T20:02:31.373169931Z
+updated_at: 2026-06-15T20:06:23.615725214Z
