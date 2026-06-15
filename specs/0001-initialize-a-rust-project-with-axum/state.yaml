@@ -6,6 +6,8 @@ pr_number: 1
 current_step: 3
 status: in_progress
 assigned_role: domain-spec
+claimed_by: domain-spec-904623
+claimed_at: 2026-06-15T19:39:13.067430583Z
 history:
     - step: 1
       role: user
@@ -28,4 +30,4 @@ history:
       completed_at: 2026-06-15T19:38:47.573917806Z
       summary: Please make the port configureable by a config file and/or a environment variable
 created_at: 2026-06-15T19:30:33.221789952Z
-updated_at: 2026-06-15T19:38:47.573917806Z
+updated_at: 2026-06-15T19:39:13.067430583Z
