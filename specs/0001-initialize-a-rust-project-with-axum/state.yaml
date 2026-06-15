@@ -3,11 +3,9 @@ title: Initialize a rust project with axum
 project: reqctl-test
 branch: req/0001-initialize-a-rust-project-with-axum
 pr_number: 1
-current_step: 5
+current_step: 6
 status: in_progress
-assigned_role: tech-spec
-claimed_by: tech-spec-913792
-claimed_at: 2026-06-15T19:40:59.195689894Z
+assigned_role: test-definition
 history:
     - step: 1
       role: user
@@ -39,5 +37,20 @@ history:
       actor: user
       completed_at: 2026-06-15T19:40:36.279634686Z
       summary: Approved.
+    - step: 5
+      role: tech-spec
+      actor: agent
+      completed_at: 2026-06-15T19:42:02.969996956Z
+      summary: |-
+        Created `specs/0001-initialize-a-rust-project-with-axum/03-tech-spec.md` covering:
+
+        - **Project layout**: new `Cargo.toml`, `src/main.rs`, `src/config.rs`, `config.toml`, replaced `.gitignore`
+        - **Dependencies**: `axum`, `tokio` (full), plus `serde`+`toml` (needed for the config-file requirement added in step 4)
+        - **Config model**: `AppConfig`/`FileConfig` structs, `load()` function implementing env-var (`REQCTL_PORT`) > file (`config.toml`) > default (`3000`) precedence, with a hand-rolled `ConfigError` (no `thiserror`) for invalid/unparseable values
+        - **main.rs**: builds router with `GET /` → "Hello, world!", binds via `TcpListener`, propagates bind/config errors so the process fails clearly on bad port config or port-in-use
+        - Mapping of each domain-spec edge case to its implementation mechanism
+        - Testing hooks for step 6 (unit tests for config precedence/errors, integration test for the route and default 404/405)
+
+        No other files were modified.
 created_at: 2026-06-15T19:30:33.221789952Z
-updated_at: 2026-06-15T19:40:59.195689894Z
+updated_at: 2026-06-15T19:42:02.969996956Z
