@@ -6,6 +6,8 @@ pr_number: 1
 current_step: 10
 status: in_progress
 assigned_role: developer
+claimed_by: developer-1002531
+claimed_at: 2026-06-15T20:02:31.373169931Z
 history:
     - step: 1
       role: user
@@ -123,4 +125,4 @@ history:
       completed_at: 2026-06-15T20:02:14.478388306Z
       summary: Approved.
 created_at: 2026-06-15T19:30:33.221789952Z
-updated_at: 2026-06-15T20:02:14.478388306Z
+updated_at: 2026-06-15T20:02:31.373169931Z
