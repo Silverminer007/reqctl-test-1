@@ -3,11 +3,9 @@ title: Initialize a rust project with axum
 project: reqctl-test
 branch: req/0001-initialize-a-rust-project-with-axum
 pr_number: 1
-current_step: 8
-status: in_progress
-assigned_role: architect-critique
-claimed_by: architect-critique-988548
-claimed_at: 2026-06-15T19:58:54.102763283Z
+current_step: 9
+status: awaiting_user
+assigned_role: user
 history:
     - step: 1
       role: user
@@ -106,5 +104,18 @@ history:
         Summary: the proposal redesigns the config model around the user's step-9 feedback ("config file is source of truth" + "use env vars in the config file") by introducing shell-style `${VAR}` / `${VAR:-default}` interpolation inside `config.toml`, with the file fully declaring whether/how env vars affect each setting (no separate, independently-overriding `REQCTL_PORT`). It keeps the same file layout, `config.rs`/`main.rs` split, and dependency set from the approved tech spec, with a pure `resolve`/`expand_env_vars` core for testability.
 
         The open-questions section flags that this is a real change from `02-domain-spec.md`/`03-tech-spec.md`'s env-wins precedence model and that several `04-tests.md` cases (1.4, 1.5, 1.6, 1.10) would need updated expectations — these upstream docs weren't modified per the task constraints, so that's surfaced for the user/maintainers to resolve.
+    - step: 8
+      role: architect-critique
+      actor: agent
+      completed_at: 2026-06-15T20:00:56.9555163Z
+      summary: |-
+        I've appended both sections to `05-architecture.md`. Summary of the critique:
+
+        - **Endorsed the overall direction** — config-file-as-source-of-truth with `${VAR:-default}` interpolation directly implements the user's explicit step-9 feedback, and a hand-rolled scanner avoids an oversized dependency.
+        - **Fixed a silent-failure gap**: the proposal's `unwrap_or_else` on `read_to_string` treats *any* read error (including permission-denied) as "file missing → use defaults." The Final Architecture matches `io::ErrorKind::NotFound` specifically and surfaces other I/O errors as `ConfigError::File`.
+        - **Resolved the deferred test-staleness question**: rather than leaving `04-tests.md` §1.4–1.6/1.10 as an "open question" for the Developer to puzzle over, the Final Architecture includes a concrete replacement test table (1.4'–1.13') that's authoritative for step 10.
+        - Noted (non-blocking) that error messages for non-numeric interpolated values could be improved by the Developer if practical, but isn't an architectural change.
+
+        Everything else in the original proposal (file layout, `config.toml` format, data structures, `main.rs`, dependencies, conventions) stands as written.
 created_at: 2026-06-15T19:30:33.221789952Z
-updated_at: 2026-06-15T19:58:54.102763283Z
+updated_at: 2026-06-15T20:00:56.9555163Z
