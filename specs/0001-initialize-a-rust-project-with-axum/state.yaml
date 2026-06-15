@@ -6,6 +6,8 @@ pr_number: 1
 current_step: 2
 status: in_progress
 assigned_role: analysis
+claimed_by: analysis-877055
+claimed_at: 2026-06-15T19:32:12.850087521Z
 history:
     - step: 1
       role: user
@@ -13,4 +15,4 @@ history:
       completed_at: 2026-06-15T19:30:33.221789952Z
       summary: Requirement created.
 created_at: 2026-06-15T19:30:33.221789952Z
-updated_at: 2026-06-15T19:30:36.798026232Z
+updated_at: 2026-06-15T19:32:12.850087521Z
