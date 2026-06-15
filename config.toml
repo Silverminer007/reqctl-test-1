@@ -1,0 +1,6 @@
+# config.toml
+# `port` accepts ${VAR} / ${VAR:-default} interpolation against the
+# process environment. This file is the single source of truth for
+# configuration; whether/which env vars matter is decided here, not
+# hard-coded in the application.
+port = ${REQCTL_PORT:-3000}
