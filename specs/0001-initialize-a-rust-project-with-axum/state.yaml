@@ -6,6 +6,8 @@ pr_number: 1
 current_step: 5
 status: in_progress
 assigned_role: tech-spec
+claimed_by: tech-spec-913792
+claimed_at: 2026-06-15T19:40:59.195689894Z
 history:
     - step: 1
       role: user
@@ -38,4 +40,4 @@ history:
       completed_at: 2026-06-15T19:40:36.279634686Z
       summary: Approved.
 created_at: 2026-06-15T19:30:33.221789952Z
-updated_at: 2026-06-15T19:40:36.279634686Z
+updated_at: 2026-06-15T19:40:59.195689894Z
