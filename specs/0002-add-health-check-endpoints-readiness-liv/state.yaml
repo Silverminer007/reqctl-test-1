@@ -1,0 +1,15 @@
+req_id: "0002"
+title: Add health check endpoints. readiness & liviness
+project: reqctl-test
+branch: req/0002-add-health-check-endpoints-readiness-liv
+current_step: 2
+status: in_progress
+assigned_role: analysis
+history:
+    - step: 1
+      role: user
+      actor: user
+      completed_at: 2026-06-16T14:29:40.345118496Z
+      summary: Requirement created.
+created_at: 2026-06-16T14:29:40.345118496Z
+updated_at: 2026-06-16T14:29:40.345118496Z
